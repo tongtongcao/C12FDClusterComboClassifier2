@@ -38,7 +38,8 @@ def parse_args():
     parser.add_argument("--num_layers", type=int, default=4)
     parser.add_argument("--lr", type=float, default=1e-3,
                         help="Learning rate for optimizer")
-    parser.add_argument("--dropout", type=float, default=0.2)
+    parser.add_argument("--dropout", type=float, default=0.2,
+                        help="Dropout rate for the MLP model (default: 0.2)")
     parser.add_argument("--no_train", action="store_true",
                         help="Skip training and only run inference using a saved model")
     parser.add_argument("--enable_progress_bar", action="store_true",
