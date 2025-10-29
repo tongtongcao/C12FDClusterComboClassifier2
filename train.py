@@ -22,12 +22,12 @@ def parse_args():
                         help="Number of training epochs")
     parser.add_argument("--batch_size", type=int, default=256,
                         help="Batch size for DataLoader")
-    parser.add_argument("--outdir", type=str, default="outputs",
+    parser.add_argument("--outdir", type=str, default="outputs/local",
                         help="Directory to save models and plots")
     parser.add_argument("--end_name", type=str, default="",
                         help="Optional suffix to append to output files (default: none)")
-    parser.add_argument("--hidden_dim", type=int, default=16)
-    parser.add_argument("--num_layers", type=int, default=2)
+    parser.add_argument("--hidden_dim", type=int, default=64)
+    parser.add_argument("--num_layers", type=int, default=4)
     parser.add_argument("--lr", type=float, default=1e-3,
                         help="Learning rate for optimizer")
     parser.add_argument("--dropout", type=float, default=0.2)
@@ -48,8 +48,6 @@ class ClusterDataset(Dataset):
         # 前6列 avgWire，后6列 slope
         X_avg = df.iloc[:, :6].values.astype(np.float32) / 112.0      # avgWire 归一化
         X_slope = df.iloc[:, 6:12].values.astype(np.float32)           # slope 可以直接使用或标准化
-        # 可选：对 slope 做标准化
-        X_slope = (X_slope - X_slope.mean(axis=0)) / (X_slope.std(axis=0) + 1e-6)
 
         self.X = np.concatenate([X_avg, X_slope], axis=1)             # shape (N, 12)
         self.y = df.iloc[:, -1].values.astype(np.float32)             # label

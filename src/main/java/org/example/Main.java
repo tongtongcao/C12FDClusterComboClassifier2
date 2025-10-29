@@ -21,10 +21,24 @@ import java.nio.file.Paths;
 // Custom Input Class
 // ===========================
 class TrackInput {
-    float[] features;   // 长度 = 12 (avgWire，slope 等输入特征)
+    float[] features;   // 长度 = 12 (avgWire + slope)
 
     public TrackInput(float[] features) {
-        this.features = features;
+        if (features.length != 12) {
+            throw new IllegalArgumentException("Expected 12 features");
+        }
+        this.features = normalize(features);
+    }
+
+    private float[] normalize(float[] feats) {
+        float[] norm = new float[12];
+
+        // 前6列 avgWire / 112.0
+        for (int i = 0; i < 6; i++) {
+            norm[i] = feats[i] / 112.0f;
+        }
+
+        return norm;
     }
 }
 

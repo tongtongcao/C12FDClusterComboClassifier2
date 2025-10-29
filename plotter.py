@@ -1,5 +1,5 @@
+import os
 import matplotlib
-
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
@@ -41,20 +41,11 @@ class Plotter:
         preds: (N,) 或 (N,1) tensor, sigmoid 概率
         targets: (N,) 或 (N,1) tensor, 0/1
         """
-        import os
-        import numpy as np
-        import matplotlib.pyplot as plt
-
         preds = preds.squeeze().cpu().numpy()
         targets = targets.squeeze().cpu().numpy()
 
         probs_1 = preds[targets == 1]
         probs_0 = preds[targets == 0]
-
-        # 打印基本信息，方便 debug
-        print(f"counts -> Label=1: {len(probs_1)}, Label=0: {len(probs_0)}")
-        if len(preds) > 0:
-            print("preds min/max:", preds.min(), preds.max())
 
         # 使用共享的 bin 边界（[0,1] 范围）
         bin_edges = np.linspace(0.0, 1.0, bins + 1)
@@ -64,10 +55,8 @@ class Plotter:
         # 如果你想比较密度而不是绝对计数，可以加 density=True
         if len(probs_1) > 0:
             plt.hist(probs_1, bins=bin_edges, alpha=0.6, color='green', label=f'Label=1 ({len(probs_1)})')
-            plt.axvline(probs_1.mean(), color='green', linestyle='--', linewidth=1)
         if len(probs_0) > 0:
             plt.hist(probs_0, bins=bin_edges, alpha=0.6, color='red', label=f'Label=0 ({len(probs_0)})')
-            plt.axvline(probs_0.mean(), color='red', linestyle='--', linewidth=1)
 
         plt.xlabel("Predicted probability")
         plt.ylabel("Count")
