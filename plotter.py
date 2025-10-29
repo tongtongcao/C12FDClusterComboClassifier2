@@ -14,12 +14,33 @@ plt.rcParams.update({
     'lines.linewidth': 3
 })
 
+
 class Plotter:
+    """
+    Utility class for plotting training losses, prediction probabilities,
+    and classification metrics (TPR/TNR, Precision/Recall/F1) versus thresholds.
+    """
     def __init__(self, print_dir='', end_name=''):
+        """
+        Parameters
+        ----------
+        print_dir : str
+            Directory to save plots.
+        end_name : str
+            Optional suffix for plot filenames.
+        """
         self.print_dir = print_dir
         self.end_name = end_name
 
     def plotTrainLoss(self, tracker):
+        """
+        Plot training and validation loss over epochs.
+
+        Parameters
+        ----------
+        tracker : LossTracker
+            Callback object containing train_losses and val_losses.
+        """
         train_losses = tracker.train_losses
         val_losses = tracker.val_losses
 
@@ -31,15 +52,24 @@ class Plotter:
         plt.yscale('log')
         plt.legend()
         plt.tight_layout()
+
+        os.makedirs(self.print_dir, exist_ok=True)
         outname = f"{self.print_dir}/loss_{self.end_name}.png"
         plt.savefig(outname)
         plt.close()
 
     def plotLabelProbs(self, preds, targets, bins=100):
         """
-        绘制正负样本预测概率分布（使用共享 bin 边界，避免单类退化）
-        preds: (N,) 或 (N,1) tensor, sigmoid 概率
-        targets: (N,) 或 (N,1) tensor, 0/1
+        Plot predicted probability distributions for positive and negative samples.
+
+        Parameters
+        ----------
+        preds : torch.Tensor
+            Predicted probabilities of shape (N,) or (N, 1).
+        targets : torch.Tensor
+            Ground truth labels of shape (N,) or (N, 1), values 0 or 1.
+        bins : int, optional
+            Number of histogram bins (default: 100).
         """
         preds = preds.squeeze().cpu().numpy()
         targets = targets.squeeze().cpu().numpy()
@@ -47,12 +77,9 @@ class Plotter:
         probs_1 = preds[targets == 1]
         probs_0 = preds[targets == 0]
 
-        # 使用共享的 bin 边界（[0,1] 范围）
         bin_edges = np.linspace(0.0, 1.0, bins + 1)
 
         plt.figure(figsize=(10, 6))
-
-        # 如果你想比较密度而不是绝对计数，可以加 density=True
         if len(probs_1) > 0:
             plt.hist(probs_1, bins=bin_edges, alpha=0.6, color='green', label=f'Label=1 ({len(probs_1)})')
         if len(probs_0) > 0:
@@ -72,7 +99,16 @@ class Plotter:
 
     def plotTPR_TNR_vs_Threshold(self, preds, targets, num_points=100):
         """
-        绘制 TPR 和 TNR 随阈值变化
+        Plot True Positive Rate (TPR) and True Negative Rate (TNR) versus thresholds.
+
+        Parameters
+        ----------
+        preds : torch.Tensor
+            Predicted probabilities of shape (N,) or (N, 1).
+        targets : torch.Tensor
+            Ground truth labels of shape (N,) or (N, 1), values 0 or 1.
+        num_points : int, optional
+            Number of threshold points (default: 100).
         """
         preds = preds.squeeze().cpu().numpy()
         targets = targets.squeeze().cpu().numpy()
@@ -87,11 +123,8 @@ class Plotter:
             FP = ((pred_labels == 1) & (targets == 0)).sum()
             FN = ((pred_labels == 0) & (targets == 1)).sum()
 
-            tpr = TP / (TP + FN + 1e-8)
-            tnr = TN / (TN + FP + 1e-8)
-
-            tpr_list.append(tpr)
-            tnr_list.append(tnr)
+            tpr_list.append(TP / (TP + FN + 1e-8))
+            tnr_list.append(TN / (TN + FP + 1e-8))
 
         plt.figure(figsize=(10, 6))
         plt.plot(thresholds, tpr_list, label='TPR', color='green', linewidth=2)
@@ -103,13 +136,28 @@ class Plotter:
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
+
         outname = f"{self.print_dir}/tpr_tnr_{self.end_name}.png"
         plt.savefig(outname, dpi=300)
         plt.close()
 
     def plotPrecisionRecallF1_vs_Threshold(self, preds, targets, num_points=100):
         """
-        绘制 Precision、Recall、F1 随阈值变化，并返回最佳阈值
+        Plot Precision, Recall, and F1-score versus thresholds and return the best threshold.
+
+        Parameters
+        ----------
+        preds : torch.Tensor
+            Predicted probabilities of shape (N,) or (N, 1).
+        targets : torch.Tensor
+            Ground truth labels of shape (N,) or (N, 1), values 0 or 1.
+        num_points : int, optional
+            Number of threshold points (default: 100).
+
+        Returns
+        -------
+        float
+            Threshold corresponding to the maximum F1-score.
         """
         preds = preds.squeeze().cpu().numpy()
         targets = targets.squeeze().cpu().numpy()
@@ -119,13 +167,9 @@ class Plotter:
 
         for th in thresholds:
             pred_labels = (preds >= th).astype(int)
-            precision = precision_score(targets, pred_labels, zero_division=0)
-            recall = recall_score(targets, pred_labels, zero_division=0)
-            f1 = f1_score(targets, pred_labels, zero_division=0)
-
-            precision_list.append(precision)
-            recall_list.append(recall)
-            f1_list.append(f1)
+            precision_list.append(precision_score(targets, pred_labels, zero_division=0))
+            recall_list.append(recall_score(targets, pred_labels, zero_division=0))
+            f1_list.append(f1_score(targets, pred_labels, zero_division=0))
 
         precision_list = np.array(precision_list)
         recall_list = np.array(recall_list)
@@ -145,6 +189,7 @@ class Plotter:
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
+
         outname = f"{self.print_dir}/prf_{self.end_name}.png"
         plt.savefig(outname, dpi=300)
         plt.close()

@@ -17,12 +17,23 @@ import ai.djl.translate.Batchifier;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-// ===========================
-// Custom Input Class
-// ===========================
+/**
+ * ===========================
+ * Custom Input Class for Track Prediction
+ * ===========================
+ */
 class TrackInput {
-    float[] features;   // 长度 = 12 (avgWire + slope)
 
+    /**
+     * Feature array: length = 12 (6 avgWire + 6 slope)
+     */
+    float[] features;
+
+    /**
+     * Constructor: validates length and normalizes input features.
+     *
+     * @param features float array of length 12
+     */
     public TrackInput(float[] features) {
         if (features.length != 12) {
             throw new IllegalArgumentException("Expected 12 features");
@@ -30,69 +41,87 @@ class TrackInput {
         this.features = normalize(features);
     }
 
+    /**
+     * Normalize features.
+     * - First 6 values (avgWire) are divided by 112.0
+     * - Remaining 6 values (slope) are unchanged
+     *
+     * @param feats input feature array
+     * @return normalized feature array
+     */
     private float[] normalize(float[] feats) {
         float[] norm = new float[12];
 
-        // 前6列 avgWire / 112.0
+        // Normalize avgWire
         for (int i = 0; i < 6; i++) {
             norm[i] = feats[i] / 112.0f;
+        }
+
+        // Copy slope features as-is
+        for (int i = 6; i < 12; i++) {
+            norm[i] = feats[i];
         }
 
         return norm;
     }
 }
 
-// ===========================
-// Main Inference Program
-// ===========================
+/**
+ * ===========================
+ * Main Inference Program
+ * ===========================
+ */
 public class Main {
 
     public static void main(String[] args) {
 
         // -----------------------------
-        // 1. Translator: 输入 TrackInput → 输出 Float (轨迹概率)
+        // 1. Translator: TrackInput -> Float (track probability)
         // -----------------------------
         Translator<TrackInput, Float> translator = new Translator<TrackInput, Float>() {
 
             @Override
             public NDList processInput(TranslatorContext ctx, TrackInput input) {
                 NDManager manager = ctx.getNDManager();
-                // shape: (1, 12)
+                // Shape: (1, 12) for single sample
                 NDArray x = manager.create(input.features).reshape(1, input.features.length);
                 return new NDList(x);
             }
 
             @Override
             public Float processOutput(TranslatorContext ctx, NDList list) {
-                NDArray result = list.get(0);  // shape: (1,)
-                return result.toFloatArray()[0];  // 取出单个预测值
+                NDArray result = list.get(0); // Shape: (1,)
+                return result.toFloatArray()[0]; // Extract single predicted value
             }
 
             @Override
             public Batchifier getBatchifier() {
-                return null;  // 单样本推理
+                return null; // Single-sample inference (no batching)
             }
         };
 
         // -----------------------------
-        // 2. 定义模型加载 Criteria
+        // 2. Define model loading criteria
         // -----------------------------
         Criteria<TrackInput, Float> criteria = Criteria.builder()
                 .setTypes(TrackInput.class, Float.class)
-                .optModelPath(Paths.get("nets/mlp_default.pt"))  // TorchScript 模型路径
+                .optModelPath(Paths.get("nets/mlp_default.pt"))  // TorchScript model path
                 .optEngine("PyTorch")
                 .optTranslator(translator)
                 .optProgress(new ProgressBar())
                 .build();
 
         // -----------------------------
-        // 3. 加载模型并执行推理
+        // 3. Load model and run inference
         // -----------------------------
         try (ZooModel<TrackInput, Float> model = criteria.loadModel();
              Predictor<TrackInput, Float> predictor = model.newPredictor()) {
 
-            // 示例输入 (12 个 float 特征)
-            float[] exampleFeatures = new float[]{44.6000f,43.3333f,41.0000f,38.8571f,35.1667f,33.4286f,-0.3232f,-0.1155f,0.0009f,-0.1015f,-0.1506f,-0.3012f};
+            // Example input (12 float features)
+            float[] exampleFeatures = new float[]{
+                    44.6000f, 43.3333f, 41.0000f, 38.8571f, 35.1667f, 33.4286f,
+                    -0.3232f, -0.1155f, 0.0009f, -0.1015f, -0.1506f, -0.3012f
+            };
 
             TrackInput input = new TrackInput(exampleFeatures);
 
