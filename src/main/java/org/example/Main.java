@@ -119,8 +119,7 @@ public class Main {
 
             // Example input (12 float features)
             float[] exampleFeatures = new float[]{
-                    44.6000f, 43.3333f, 41.0000f, 38.8571f, 35.1667f, 33.4286f,
-                    -0.3232f, -0.1155f, 0.0009f, -0.1015f, -0.1506f, -0.3012f
+                    9.0000f,7.1429f,7.5000f,7.5714f,12.7143f,12.8333f,-0.2489f,-0.3267f,-0.2813f,-0.2991f,-0.1329f,-0.1509f
             };
 
             TrackInput input = new TrackInput(exampleFeatures);
