@@ -34,8 +34,8 @@ def parse_args():
                         help="Directory to save models and plots")
     parser.add_argument("--end_name", type=str, default="",
                         help="Optional suffix to append to output files (default: none)")
-    parser.add_argument("--hidden_dim", type=int, default=64)
-    parser.add_argument("--num_layers", type=int, default=4)
+    parser.add_argument("--hidden_dim", type=int, default=16)
+    parser.add_argument("--num_layers", type=int, default=2)
     parser.add_argument("--lr", type=float, default=1e-3,
                         help="Learning rate for optimizer")
     parser.add_argument("--dropout", type=float, default=0.2,
