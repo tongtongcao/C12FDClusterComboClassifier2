@@ -132,6 +132,7 @@ class Plotter:
         plt.xlabel("Threshold")
         plt.ylabel("Rate")
         plt.yscale('log')
+        plt.ylim(0.8, 1.0)
         plt.title("TPR/TNR vs Threshold")
         plt.grid(True)
         plt.legend()
