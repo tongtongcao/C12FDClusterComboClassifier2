@@ -14,7 +14,7 @@ Finally, run the package,
 
 Arguments:
   - positional arguments:
-    - inputs      &nbsp;&nbsp;&nbsp;          One or more CSV files (default: avgWiresLabel.csv)
+    - inputs      &nbsp;&nbsp;&nbsp;          One or more CSV files (default: avgWiresSlopesLabel.csv)
 
   - options:
     - -h, --help     &nbsp;&nbsp;&nbsp;       show this help message and exit
