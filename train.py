@@ -24,7 +24,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="MLP Training and Inference")
     parser.add_argument("--device", type=str, choices=["cpu", "gpu", "auto"], default="auto",
                         help="Choose device: cpu, gpu, or auto (default: auto)")
-    parser.add_argument("inputs", type=str, nargs="*", default=["avgWiresLabel.csv"],
+    parser.add_argument("inputs", type=str, nargs="*", default=["avgWiresSlopesLabel.csv"],
                         help="One or more input CSV files")
     parser.add_argument("--max_epochs", type=int, default=50,
                         help="Number of training epochs")
