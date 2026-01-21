@@ -142,6 +142,11 @@ class Plotter:
         plt.savefig(outname, dpi=300)
         plt.close()
 
+        data = np.vstack([thresholds, tpr_list, tnr_list]).T
+        header = "threshold  tpr  tnr"
+        outname_txt = f"{self.print_dir}/tpr_tnr_{self.end_name}.txt"
+        np.savetxt(outname_txt, data, fmt="%.6f", header=header)
+
     def plotPrecisionRecallF1_vs_Threshold(self, preds, targets, num_points=100):
         """
         Plot Precision, Recall, and F1-score versus thresholds and return the best threshold.
