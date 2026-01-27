@@ -7,6 +7,7 @@ import numpy as np
 import time
 import argparse
 import os
+from pathlib import Path
 
 from trainer import *
 from plotter import Plotter
@@ -210,10 +211,19 @@ def main():
         torchscript_model.save(f"{outDir}/mlp_{end_name}.pt")
 
     # Load model for inference
-    if doTraining:
-        model = torch.jit.load(f"{outDir}/mlp_{end_name}.pt")
-    else:
-        model = torch.jit.load(f"nets/mlp_default.pt")
+    BASE_DIR = Path(__file__).resolve().parent
+    model_file = (
+        Path(outDir) / f"mlp_{end_name}.pt"
+        if doTraining
+        else BASE_DIR / "nets" / "mlp_default.pt"
+    )
+
+    model_file = model_file.resolve()
+    print("Loading model from:", model_file)
+
+    if not model_file.exists():
+        raise FileNotFoundError(f"Model file not found: {model_file}")
+
     model.eval()
 
     # Run inference
