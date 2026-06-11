@@ -151,8 +151,8 @@ class ClusterComboMLP(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         loss = self._compute_loss(y_hat, y)
-        self.log("train_loss", loss, prog_bar=True)
-        self.log("pos_weight", self.pos_weight_smooth, prog_bar=True)
+        self.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("pos_weight", self.pos_weight_smooth, on_step=False, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -169,7 +169,7 @@ class ClusterComboMLP(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         loss = self._compute_loss(y_hat, y)
-        self.log("val_loss", loss, prog_bar=True)
+        self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
 
     def configure_optimizers(self):
         """
