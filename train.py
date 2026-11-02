@@ -31,6 +31,7 @@ def parse_args():
                         help="Number of training epochs")
     parser.add_argument("--batch_size", type=int, default=256,
                         help="Batch size for DataLoader")
+    parser.add_argument("--model_file", type=str, default=None, help="Path to the trained model")
     parser.add_argument("--outdir", type=str, default="outputs/local",
                         help="Directory to save models and plots")
     parser.add_argument("--end_name", type=str, default="",
@@ -39,6 +40,8 @@ def parse_args():
     parser.add_argument("--num_layers", type=int, default=4)
     parser.add_argument("--lr", type=float, default=1e-3,
                         help="Learning rate for optimizer")
+    parser.add_argument("--tr", type=float, default=0.8,
+                        help="ratio of training samples in dataset")
     parser.add_argument("--dropout", type=float, default=0.2,
                         help="Dropout rate for the MLP model (default: 0.2)")
     parser.add_argument("--no_train", action="store_true",
@@ -113,6 +116,7 @@ def main():
     batchSize = args.batch_size
     end_name = args.end_name
     doTraining = not args.no_train
+    existing_model_file = Path(args.model_file) if args.model_file else None
 
     os.makedirs(outDir, exist_ok=True)
 
@@ -130,7 +134,7 @@ def main():
     print(f"num_pos={num_pos}, num_neg={num_neg}, pos_weight={pos_weight:.3f}")
 
     # Split train/validation
-    train_size = int(0.8 * len(dataset))
+    train_size = int(args.tr * len(dataset))
     val_size = len(dataset) - train_size
     generator = torch.Generator().manual_seed(42)
     train_set, val_set = random_split(dataset, [train_size, val_size], generator=generator)
@@ -212,11 +216,13 @@ def main():
 
     # Load model for inference
     BASE_DIR = Path(__file__).resolve().parent
-    model_file = (
-        Path(outDir) / f"mlp_{end_name}.pt"
-        if doTraining
-        else BASE_DIR / "nets" / "mlp_default.pt"
-    )
+    if doTraining:
+        model_file = Path(outDir) / f"mlp_{end_name}.pt"
+    else:
+        if existing_model_file is not None:
+            model_file = Path(existing_model_file)
+        else:
+            model_file = BASE_DIR / "nets" / "mlp_default.pt"
 
     model_file = model_file.resolve()
     print("Loading model from:", model_file)
